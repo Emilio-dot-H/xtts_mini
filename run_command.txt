@@ -1,0 +1,125 @@
+# RUN_XTTS . PY
+# --------------------------------------------------------------
+python run_xtts.py \
+  --input-txt demo_script.txt \
+  --speaker-wav speaker1.wav speaker2.wav \
+  --model-dir /workspace/xtts_job/xtts_v2_model \
+  --language en \
+  --max-chars 500 \
+  --max-sentences-per-chunk 4 \
+  --model-char-limit 280 \
+  --cpu-threads 8 \
+  --inter-chunk-ms 35 \
+  --sentence-boundary-ms 115 \
+  --final-hold-ms 2000 \
+  --fade-ms 5 \
+  --trim-threshold 0.0012 \
+  --trim-head-ms 24 \
+  --trim-tail-ms 220 \
+  --max-tail-ms 310 \
+  --max-internal-silence-ms 240 \
+  --quiet-threshold 0.0095 \
+  --quiet-min-ms 380 \
+  --quiet-max-ms 220 \
+  --pause-compress-cps 12.8 \
+  --max-retries 2 \
+  --min-chars-per-sec 12.2 \
+  --max-chunk-seconds 21.0 \
+  --hard-cap-seconds 26.8 \
+  --match-speaker-cadence \
+  --cadence-strength 0.25 \
+  --debug-dir xtts_debug \
+  --keep-chunks \
+  --out demo_output.wav
+# --------------------------------------------------------------
+# XTTS _ MINI . PY
+# --------------------------------------------------------------
+python xtts_mini.py \
+  --input-txt 20_script.txt \
+  --speaker-wav speaker_alpha.wav \
+  --model-dir /workspace/xtts_job/xtts_v2_model \
+  --speed 1.00 \
+  --temperature 0.58 \
+  --repetition_penalty 2.2 \
+  --top_k 40 \
+  --top_p 0.75 \
+  --max-chars 235 \
+  --inter-chunk-silence-ms 90 \
+  --output-wav 20_output.wav
+
+
+
+#_________________
+# RECO QUEUE LIST
+#_________________
+
+python xtts_mini.py \
+  --input-txt demo_script.txt \
+  --speaker-wav speaker_prime.wav \
+  --model-dir /workspace/xtts_job/xtts_v2_model \
+  --speed 1.00 \
+  --temperature 0.58 \
+  --repetition_penalty 2.2 \
+  --top_k 40 \
+  --top_p 0.75 \
+  --max-chars 235 \
+  --inter-chunk-silence-ms 90 \
+  --output-wav mini_output.wav
+
+
+# --------------------------------------------------------------
+# For Debugging - ADD:
+# --------------------------------------------------------------
+--keep-chunks \
+# --------------------------------------------------------------
+# --------------------------------------------------------------
+# For Quicker Runs...:
+# --------------------------------------------------------------
+# max-sentences-per-chunk 5 (instead of 4) reduces underfilled chunks
+# max-retries 1 (insetad of 2) cuts expensive rescue passes
+# --min-chars-per-sec 12.4 instead of 13.2
+# --max-chunk-seconds 23.5 instead of 22.0
+
+# INFO FOR DEBUGGING
+# Full terminal log from the run (especially [WARN], [INFO], and [AUDIT] lines).
+# The kept chunk folder (tts_chunks/) zipped when --keep-chunks is enabled.
+# The xtts_debug folder zipped (debug_report.json + chunk_text_map.txt + debug_summary.txt).
+# Which reference file(s) you used (speaker.wav only, or both refs).
+# GPU type + VRAM on that RunPod instance.
+
+
+# INFO #
+# --input-txt: Path to full script text file. Example: 09_script.txt.
+# --speaker-wav: One or more voice reference WAVs for XTTS cloning. Use clean 10-30s speech.
+# --model-dir: Folder containing XTTS-v2 model files (config.json, model.pth, vocab.json, speakers_xtts.pth).
+# --out: Output merged WAV filename/path.
+# --language: XTTS language code. Default en. Use speaker language for best prosody.
+# --max-chars: Max characters per text chunk. Lower = safer, higher = fewer chunk boundaries.
+#   Typical range for this script: 300-700.
+# --max-sentences-per-chunk: Hard cap for sentences in a chunk.
+#   Use 4 to preserve voice flow, use 2 (or 1) if lines are still getting skipped.
+# --model-char-limit: Hard upper limit applied before synthesis to avoid XTTS truncation warnings.
+# --cpu-threads: Torch CPU worker threads.
+#   Single process on 32 vCPU: 6-12.
+# --inter-chunk-ms: Base silence inserted between chunks (ms).
+# --sentence-boundary-ms: Pause used when a chunk ends with . ! or ? for natural breathing.
+# --fade-ms: Crossfade between chunks (ms). Keep small to avoid clipping final consonants.
+# --trim-threshold: Silence threshold used for edge trimming.
+# --trim-head-ms: Keep this much lead-in silence before speech.
+# --trim-tail-ms: Keep this much tail silence after speech.
+# --max-tail-ms: Hard cap for trailing silence kept per chunk.
+# Note: this run_xtts.py version auto-merges short staccato sentence runs and disables
+# crossfade when a previous chunk already has inserted boundary pause, to protect endings.
+# --max-internal-silence-ms: Caps very long pauses inside a generated chunk.
+# --quiet-threshold: Energy threshold used to detect long low-energy "dead air" plateaus.
+# --quiet-min-ms: Only quiet plateaus above this length are compressed.
+# --quiet-max-ms: Compressed target for long quiet plateaus.
+# --pause-compress-cps: Apply quiet-plateau compression only on slower-flow chunks below this cps.
+# --max-retries: Regenerate chunk with progressively safer decoding when bad chunk risk is detected.
+# --min-chars-per-sec: Flags suspiciously slow chunks (often long unnatural pauses or generation drift).
+# --max-chunk-seconds: Flags unusually long chunk renders.
+# --hard-cap-seconds: Detects XTTS hard-cap-like outputs (about 27s) and forces retry profiles.
+# Retry/fallback policy in this version is intentionally conservative:
+# it escalates mainly on hard-cap / truncation / severe tail issues to preserve voice quality.
+# --debug-dir: Writes debug_report.json, chunk_text_map.txt, and debug_summary.txt for diagnosis.
+# --keep-chunks: Keep intermediate chunk WAV files in tts_chunks/ for debugging/listening checks.

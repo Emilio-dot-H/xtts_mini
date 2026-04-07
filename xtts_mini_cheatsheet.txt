@@ -1,0 +1,195 @@
+# =========================
+# XTTS PARAMETER CHEAT SHEET
+# =========================
+
+# text
+# ----
+# What the model will speak.
+# Example:
+# text = "The Vikings sailed at dawn."
+#
+# Tip:
+# Cleaner, well-punctuated text = better audio
+
+
+# language
+# --------
+# Language code for pronunciation rules.
+# Example:
+# language = "en"   # English
+# language = "fr"   # French
+#
+# Tip:
+# Wrong language → weird pronunciation
+
+
+# gpt_cond_latent
+# ----------------
+# "Voice context memory" extracted from your speaker audio.
+# Helps the model understand tone, rhythm, speaking style.
+#
+# You usually get it from:
+# get_conditioning_latents(speaker_wav)
+#
+# Example:
+# gpt_cond_latent = cached_latent
+#
+# Tip:
+# Cache this → BIG speed improvement (no recomputation)
+
+
+# speaker_embedding
+# ------------------
+# The "voice identity" (who is speaking).
+# Think: fingerprint of the speaker's voice.
+#
+# Example:
+# speaker_embedding = cached_embedding
+#
+# Tip:
+# Same speaker → reuse this every time (faster + consistent voice)
+
+
+# temperature
+# ------------
+# Controls randomness / creativity of speech generation.
+#
+# Lower (0.5):
+# → more stable, predictable, slightly robotic
+#
+# Higher (0.8+):
+# → more expressive, but can get weird
+#
+# Example:
+# temperature = 0.65  # sweet spot
+#
+# Debug Tip:
+# If audio is unstable → LOWER it
+
+
+# length_penalty
+# ---------------
+# Controls how long outputs tend to be.
+#
+# > 1.0 → encourages longer speech (more drawn out)
+# < 1.0 → shorter, more clipped speech
+#
+# Example:
+# length_penalty = 1.0  # default, safe
+#
+# Debug Tip:
+# If endings feel rushed/clipped → try 1.1–1.2
+
+
+# repetition_penalty
+# -------------------
+# Prevents repeating sounds/words ("uhhh", loops, echoes).
+#
+# Lower (1.5):
+# → more natural, but risk of repetition
+#
+# Higher (2.5+):
+# → stricter, but can sound stiff
+#
+# Example:
+# repetition_penalty = 2.0
+#
+# Debug Tip:
+# If you hear repeats or stutters → INCREASE it
+
+
+# top_k
+# ------
+# Limits choices to the top K most likely next sounds.
+#
+# Lower (20):
+# → safer, more boring, more stable
+#
+# Higher (100):
+# → more variety, but riskier
+#
+# Example:
+# top_k = 40
+#
+# Simple idea:
+# "Only pick from top 40 most likely next words/sounds"
+
+
+# top_p
+# ------
+# Similar to top_k but based on probability mass.
+#
+# Lower (0.7):
+# → safer, predictable
+#
+# Higher (0.95):
+# → more creative, less stable
+#
+# Example:
+# top_p = 0.8
+#
+# Simple idea:
+# "Pick from smallest group that covers 80% probability"
+
+
+# speed
+# ------
+# Playback speed of generated voice.
+#
+# < 1.0 → slower (0.95 = slightly slower)
+# > 1.0 → faster
+#
+# Example:
+# speed = 0.97
+#
+# ⚠️ Important:
+# Too far from 1.0 → artifacts, weird endings, clipping
+#
+# Debug Tip:
+# Tail words getting cut ("mark" → "mar")?
+# → Try 1.0 or 0.98
+
+
+# enable_text_splitting
+# ----------------------
+# Lets XTTS split long text internally into sentences.
+#
+# True:
+# → handles long input
+# → BUT loses context between sentences
+#
+# False:
+# → better flow + context
+# → YOU must chunk text yourself (your pipeline already does this)
+#
+# Example:
+# enable_text_splitting = False
+#
+# Debug Tip:
+# Keep OFF for high-quality narration pipelines
+
+
+# =========================
+# QUICK "GOOD DEFAULTS"
+# =========================
+#
+# temperature = 0.6–0.7
+# repetition_penalty = 2.0–2.3
+# top_k = 30–50
+# top_p = 0.75–0.85
+# speed = 0.97–1.0
+# enable_text_splitting = False
+#
+# =========================
+# DEBUG MINDSET
+# =========================
+#
+# If output is:
+#
+# - unstable / weird → lower temperature
+# - repetitive → increase repetition_penalty
+# - boring / flat → increase temperature slightly
+# - clipped endings → adjust speed + length_penalty
+# - inconsistent voice → cache latents + embeddings
+#
+# =========================
